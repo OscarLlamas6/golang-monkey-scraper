@@ -1,25 +1,53 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gocolly/colly"
 )
 
+type Work struct {
+	SHAPadre string
+	URL      string
+	NR       int64
+}
+
+type Mono struct {
+	ID         string
+	Disponible bool
+}
+
+type Resultado struct {
+	Origen   string
+	Palabras int64
+	Enlaces  int64
+	SHA      string
+	URL      string
+	Mono     string
+}
+
 var (
-	Lectura               string
-	EntryPoint            string
-	FileName              string
-	TimeOutStatus         bool = false
-	TimeOutValue          int64
-	MonkeysAmmount        int64
-	QueueSize             int64
-	NrValue               int64
-	Success, Failed, Send int64
+	Lectura            string
+	EntryPoint         string
+	FileName           string
+	TimeOutStatus      bool = false
+	TimeOutValue       int64
+	MonkeysAmmount     int64
+	QueueSize          int64
+	NrValue            int64
+	contadorEscrituras int64 = 0
 )
 
 //LimpiarPantalla fuction
@@ -53,6 +81,92 @@ func getColor(colorName string) string {
 		"white":  "\033[37m",
 	}
 	return colors[colorName]
+}
+
+// Metodo para realizar el scrapping
+func RunScrapper(nr int64, url string, mono string, origen string) {
+
+	contenido := ""
+	var cantidadEnlaces int64 = 0
+	var contadorNR int64 = 0
+	file, err := os.OpenFile(FileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Fatalf("could not create the file, err :%q", err)
+		panic(err)
+	}
+
+	defer file.Close()
+
+	c := colly.NewCollector()
+
+	// Buscando todas los enlaces dentro de las etiquetas p
+	c.OnHTML("p", func(e *colly.HTMLElement) {
+		contenido += e.Text + "\n"
+		e.ForEach("a[href]", func(_ int, elem *colly.HTMLElement) {
+			link := elem.Attr("href")
+			if elem.Request.AbsoluteURL(link) != "" {
+
+				cantidadEnlaces++
+
+				if nr > 0 && contadorNR < nr {
+
+					/* AQUI SE MANDARIAN LOS NUEVOS WORKS A LA COLA*/
+
+					// variable con el enlace para el nuevo work que se ingresara en la cola
+					linkNuevoWork := elem.Request.AbsoluteURL(link)
+
+					// variable con el valor de nr - 1
+					newNR := nr - 1
+
+					contadorNR++
+
+					fmt.Printf("Se encontro el enlace #%v: %s - nuevo Nr = %v \n ", contadorNR, linkNuevoWork, newNR)
+
+				}
+			}
+		})
+	})
+
+	c.Visit(url)
+
+	h := sha1.New()
+	h.Write([]byte(contenido))
+	contentSHA := hex.EncodeToString(h.Sum(nil))
+
+	JsonResult := Resultado{
+		Origen:   origen,
+		Palabras: int64(WordCount(contenido)),
+		Enlaces:  cantidadEnlaces,
+		SHA:      contentSHA,
+		URL:      url,
+		Mono:     mono,
+	}
+
+	buffer := new(bytes.Buffer)
+	encoder := json.NewEncoder(buffer)
+	encoder.SetIndent("", "\t")
+
+	err = encoder.Encode(JsonResult)
+	if err != nil {
+		panic(err)
+	}
+
+	if _, err = file.Write(buffer.Bytes()); err != nil {
+		panic(err)
+	}
+
+	contadorEscrituras++
+
+	if _, err = file.WriteString(",\n"); err != nil {
+		panic(err)
+	}
+}
+
+func WordCount(value string) int {
+	re := regexp.MustCompile(`[\S]+`)
+	results := re.FindAllString(value, -1)
+	return len(results) + 1
 }
 
 func main() {
@@ -106,7 +220,7 @@ func main() {
 
 		fmt.Println("")
 		fmt.Println("")
-		fmt.Print(string(getColor("yellow")), "Resumen de configuración:")
+		fmt.Println(string(getColor("yellow")), "Resumen de configuración:")
 		fmt.Print(string(getColor("cyan")), "Cantidad de monos -> ")
 		fmt.Println(string(getColor("red")), MonkeysAmmount)
 		fmt.Print(string(getColor("cyan")), "Tamaño de la cola -> ")
@@ -135,6 +249,10 @@ func main() {
 			AQUI TOCA HACER EL PROCESO, EN ESTE PUNTO
 			LAS VARIABLES GLOBALES YA ESTAN SETEADAS PARA PODER USARLAS
 		*/
+
+		// Realizando un scrapper de prueba, esto se haria iterando en la cola
+		RunScrapper(NrValue, EntryPoint, "mono_01", "0")
+
 		continuar = false
 
 	}

@@ -100,9 +100,18 @@ func RunScrapper(nr int64, url string, mono string, origen string) {
 
 	c := colly.NewCollector()
 
-	// Buscando todas los enlaces dentro de las etiquetas p
 	c.OnHTML("p", func(e *colly.HTMLElement) {
 		contenido += e.Text + "\n"
+	})
+
+	h := sha1.New()
+	h.Write([]byte(contenido))
+	// variable con el SHA para el atributo SHAPadre de los nuevos works
+	contentSHA := hex.EncodeToString(h.Sum(nil))
+
+	// Buscando todas los enlaces dentro de las etiquetas p
+	c.OnHTML("p", func(e *colly.HTMLElement) {
+
 		e.ForEach("a[href]", func(_ int, elem *colly.HTMLElement) {
 			link := elem.Attr("href")
 			if elem.Request.AbsoluteURL(link) != "" {
@@ -110,8 +119,6 @@ func RunScrapper(nr int64, url string, mono string, origen string) {
 				cantidadEnlaces++
 
 				if nr > 0 && contadorNR < nr {
-
-					/* AQUI SE MANDARIAN LOS NUEVOS WORKS A LA COLA*/
 
 					// variable con el enlace para el nuevo work que se ingresara en la cola
 					linkNuevoWork := elem.Request.AbsoluteURL(link)
@@ -121,6 +128,7 @@ func RunScrapper(nr int64, url string, mono string, origen string) {
 
 					contadorNR++
 
+					/* AQUI SE MANDARIAN LOS NUEVOS WORKS A LA COLA*/
 					fmt.Printf("Se encontro el enlace #%v: %s - nuevo Nr = %v \n ", contadorNR, linkNuevoWork, newNR)
 
 				}
@@ -129,10 +137,6 @@ func RunScrapper(nr int64, url string, mono string, origen string) {
 	})
 
 	c.Visit(url)
-
-	h := sha1.New()
-	h.Write([]byte(contenido))
-	contentSHA := hex.EncodeToString(h.Sum(nil))
 
 	JsonResult := Resultado{
 		Origen:   origen,

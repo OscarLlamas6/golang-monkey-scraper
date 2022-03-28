@@ -63,7 +63,7 @@ func LimpiarPantalla() {
 		cmd.Run()
 	}
 	fmt.Println(string(getColor("white")), "--------------------- PRACTICA 2 - G12 SOPES2 ----------------------")
-	fmt.Println(string(getColor("purple")), "------------------------ MONKEY WRAPPER CLI ------------------------")
+	fmt.Println(string(getColor("purple")), "------------------------ MONKEY SCRAPPER CLI ------------------------")
 	fmt.Println()
 }
 

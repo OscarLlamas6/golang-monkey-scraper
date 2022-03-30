@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gocolly/colly"
@@ -24,7 +25,7 @@ type Work struct {
 	NR       int64
 }
 
-type Mono struct {
+type Monkey struct {
 	ID         string
 	Disponible bool
 }
@@ -38,17 +39,36 @@ type Resultado struct {
 	Mono     string
 }
 
+type Cache struct {
+	Mu    sync.Mutex
+	Slots []Work
+}
+
 var (
+	SeguirScrapper     bool = true
 	Lectura            string
 	EntryPoint         string
 	FileName           string
-	TimeOutStatus      bool = false
-	TimeOutValue       int64
 	MonkeysAmmount     int64
 	QueueSize          int64
 	NrValue            int64
 	contadorEscrituras int64 = 0
+	continuar          bool  = true
+	myQueue            *Cache
+	myResults          []Resultado
+	myMonkeys          []Monkey
 )
+
+// checkear constantemente si hay trabajos nuevos para agregar a la cola
+func CheckJobs(canal *chan Work, cache *Cache) {
+	for SeguirScrapper {
+
+		myJob := <-*canal
+		// fmt.Println("Se recibio un nuevo work en el canal")
+		// fmt.Println(myJob)
+		Queue(&myJob)
+	}
+}
 
 //LimpiarPantalla fuction
 func LimpiarPantalla() {
@@ -63,7 +83,7 @@ func LimpiarPantalla() {
 		cmd.Run()
 	}
 	fmt.Println(string(getColor("white")), "--------------------- PRACTICA 2 - G12 SOPES2 ----------------------")
-	fmt.Println(string(getColor("purple")), "------------------------ MONKEY SCRAPPER CLI ------------------------")
+	fmt.Println(string(getColor("purple")), "------------------------ MONKEY SCRAPER CLI ------------------------")
 	fmt.Println()
 }
 
@@ -83,20 +103,65 @@ func getColor(colorName string) string {
 	return colors[colorName]
 }
 
-// Metodo para realizar el scrapping
-func RunScrapper(nr int64, url string, mono string, origen string) {
+// Escribir resultados en el json
+func WriteResult() {
 
-	contenido := ""
-	var cantidadEnlaces int64 = 0
-	var contadorNR int64 = 0
-	file, err := os.OpenFile(FileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(FileName, os.O_CREATE|os.O_WRONLY, 0644)
 
 	if err != nil {
 		log.Fatalf("could not create the file, err :%q", err)
 		panic(err)
 	}
 
-	defer file.Close()
+	file.Truncate(0)
+	file.Seek(0, 0)
+
+	if _, err = file.WriteString("["); err != nil {
+		panic(err)
+	}
+
+	for i, result := range myResults {
+
+		buffer := new(bytes.Buffer)
+		encoder := json.NewEncoder(buffer)
+		encoder.SetIndent("", "\t")
+
+		err = encoder.Encode(result)
+		if err != nil {
+			panic(err)
+		}
+
+		if _, err = file.Write(buffer.Bytes()); err != nil {
+			panic(err)
+		}
+
+		if i < (len(myResults) - 1) {
+			if _, err = file.WriteString(",\n"); err != nil {
+				panic(err)
+			}
+		}
+
+	}
+
+	if _, err = file.WriteString("]"); err != nil {
+		panic(err)
+	}
+
+	file.Close()
+}
+
+// Metodo para realizar el scrapping
+/*
+nr = numero de enlaces que debe buscar en la pagina
+url = direccion de la pagina
+mono = id del mono que esta haciendo el scrapping
+origen = es el SHA del contenido de la pagina donde se encontro ese enlace, si es el primer link origen='0'
+*/
+func RunScraper(nr int64, url string, mono string, origen string, works chan Work, monkeyIndex int) {
+
+	contenido := ""
+	var cantidadEnlaces int64 = 0
+	var contadorNR int64 = 0
 
 	c := colly.NewCollector()
 
@@ -129,7 +194,15 @@ func RunScrapper(nr int64, url string, mono string, origen string) {
 					contadorNR++
 
 					/* AQUI SE MANDARIAN LOS NUEVOS WORKS A LA COLA*/
-					fmt.Printf("Se encontro el enlace #%v: %s - nuevo Nr = %v \n ", contadorNR, linkNuevoWork, newNR)
+					// fmt.Printf("Se encontro el enlace #%v: %s - nuevo Nr = %v \n ", contadorNR, linkNuevoWork, newNR)
+
+					foundJob := Work{
+						SHAPadre: contentSHA,
+						URL:      linkNuevoWork,
+						NR:       newNR,
+					}
+
+					works <- foundJob
 
 				}
 			}
@@ -147,35 +220,135 @@ func RunScrapper(nr int64, url string, mono string, origen string) {
 		Mono:     mono,
 	}
 
-	buffer := new(bytes.Buffer)
-	encoder := json.NewEncoder(buffer)
-	encoder.SetIndent("", "\t")
-
-	err = encoder.Encode(JsonResult)
-	if err != nil {
-		panic(err)
-	}
-
-	if _, err = file.Write(buffer.Bytes()); err != nil {
-		panic(err)
-	}
-
+	myResults = append(myResults, JsonResult)
 	contadorEscrituras++
+	numberOfMiliseconds := WordCount(contenido)
 
-	if _, err = file.WriteString(",\n"); err != nil {
-		panic(err)
-	}
+	mensaje := fmt.Sprintf("El mono %s esta descanzando", myMonkeys[monkeyIndex].ID)
+	fmt.Println(string(getColor("yellow")), mensaje)
+	time.Sleep(time.Millisecond * time.Duration(numberOfMiliseconds))
+	myMonkeys[monkeyIndex].Disponible = true
+	mensaje = fmt.Sprintf("El mono %s ya esta disponible", myMonkeys[monkeyIndex].ID)
+	fmt.Println(string(getColor("cyan")), mensaje)
 }
 
+// Metodo para contar palabras
 func WordCount(value string) int {
 	re := regexp.MustCompile(`[\S]+`)
 	results := re.FindAllString(value, -1)
 	return len(results) + 1
 }
 
+// Agregar un trabajo a la cola
+func Queue(work *Work) {
+	if len(myQueue.Slots) < cap(myQueue.Slots) {
+		myQueue.Mu.Lock()
+		myQueue.Slots = append(myQueue.Slots, *work)
+		myQueue.Mu.Unlock()
+	}
+}
+
+// Quitar un trabajo de la cola
+func DeQueue() *Work {
+	myQueue.Mu.Lock()
+	auxWork := myQueue.Slots[0] // x|2|3|4|5|...
+	myQueue.Slots = myQueue.Slots[1:]
+	myQueue.Mu.Unlock()
+
+	return &auxWork
+}
+
+// Buscar un mono disponible
+func FindAvailableMoney(monos *[]Monkey) int {
+
+	for i, mono := range *monos {
+
+		if mono.Disponible {
+			return i
+		}
+	}
+
+	return -1
+}
+
+// Setear parametros de scrapper
+func SetScraper(firstJob *Work, monosValue int64, queueSize int64) {
+
+	// haciendo un canal donde pasaran Works
+	jobs := make(chan Work, 1000)
+
+	// Haciendo un arreglo donde estan mis N monos
+	myMonkeys = make([]Monkey, monosValue)
+
+	// Seteando ID para cada mono
+	for i := 0; i < int(monosValue); i++ {
+		myMonkeys[i].ID = "monkey_0" + strconv.Itoa(i+1) //monkey_01, monkey_02
+		myMonkeys[i].Disponible = true
+	}
+
+	// Creando cola de trabajos
+	myQueue = &Cache{Slots: make([]Work, 0, queueSize)}
+	myQueue.Mu.Lock()
+	// agregando el trabajo inicial a la cola
+	myQueue.Slots = append(myQueue.Slots, *firstJob)
+	myQueue.Mu.Unlock()
+
+	// Go routine para leer canal y agregar trabajos a la cola
+	go CheckJobs(&jobs, myQueue)
+
+	for len(myQueue.Slots) > 0 {
+
+		if len(myQueue.Slots) > 0 {
+
+			newJob := DeQueue()
+			searchMonkey := true
+			monkeyIndex := -1
+
+			for searchMonkey {
+
+				monkeyIndex = FindAvailableMoney(&myMonkeys)
+				if monkeyIndex != -1 {
+					searchMonkey = false
+				}
+
+			}
+
+			// si llego aqui, es porque hay un mono disponible
+			myMonkeys[monkeyIndex].Disponible = false
+			monkeyID := myMonkeys[monkeyIndex].ID
+			go RunScraper(newJob.NR, newJob.URL, monkeyID, newJob.SHAPadre, jobs, monkeyIndex)
+			time.Sleep(time.Second * 1)
+		}
+
+	}
+
+	WriteResult()
+
+	keepScraping := true
+
+	for keepScraping {
+
+		contadorMonosDisponibles := 0
+
+		for _, mono := range myMonkeys {
+
+			if mono.Disponible {
+				contadorMonosDisponibles++
+			}
+
+		}
+
+		if contadorMonosDisponibles == len(myMonkeys) {
+			keepScraping = false
+		}
+
+	}
+
+	time.Sleep(time.Second * 1)
+}
+
 func main() {
 
-	continuar := true
 	LimpiarPantalla()
 
 	for continuar {
@@ -245,18 +418,23 @@ func main() {
 
 		fmt.Println("")
 		fmt.Print(string(getColor("cyan")), "Configuración cargada correctamente.")
-		fmt.Println(string(getColor("yellow")), "Presione ENTER para iniciar el scrapping. :D")
+		fmt.Println(string(getColor("yellow")), "Presione ENTER para iniciar el scraping. :D")
 		var wait string
 		fmt.Scanln(&wait)
-		fmt.Println(string(getColor("red")), "Ejecutando Monkey Wrapper... ")
-		/*
-			AQUI TOCA HACER EL PROCESO, EN ESTE PUNTO
-			LAS VARIABLES GLOBALES YA ESTAN SETEADAS PARA PODER USARLAS
-		*/
+		fmt.Println(string(getColor("red")), "Ejecutando Monkey Scraper... ")
+
+		myFirstJob := Work{
+			SHAPadre: "0",
+			URL:      EntryPoint,
+			NR:       NrValue,
+		}
+
+		SetScraper(&myFirstJob, MonkeysAmmount, QueueSize)
 
 		// Realizando un scrapper de prueba, esto se haria iterando en la cola
-		RunScrapper(NrValue, EntryPoint, "mono_01", "0")
-
+		//RunScrapper(NrValue, EntryPoint, "mono_01", "0")
+		fmt.Println(string(getColor("green")), "Scraping terminado. Presione ENTER para salir. :D")
+		fmt.Scanln(&Lectura)
 		continuar = false
 
 	}

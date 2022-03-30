@@ -1,9 +1,45 @@
-{
+[{
 	"Origen": "0",
-	"Palabras": 2488,
-	"Enlaces": 83,
-	"SHA": "d65d008a1000103008ccae0883390de0f8e2b0b9",
-	"URL": "https://en.wikipedia.org/wiki/Web_scraping",
-	"Mono": "mono_01"
+	"Palabras": 662,
+	"Enlaces": 15,
+	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+	"URL": "https://es.wikipedia.org/wiki/Web_scraping",
+	"Mono": "monkey_01"
 }
 ,
+{
+	"Origen": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+	"Palabras": 1937,
+	"Enlaces": 126,
+	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+	"URL": "https://es.wikipedia.org/wiki/Programa_inform%C3%A1tico",
+	"Mono": "monkey_02"
+}
+,
+{
+	"Origen": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+	"Palabras": 1023,
+	"Enlaces": 49,
+	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+	"URL": "https://es.wikipedia.org/wiki/Sitio_web",
+	"Mono": "monkey_01"
+}
+,
+{
+	"Origen": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+	"Palabras": 2115,
+	"Enlaces": 22,
+	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+	"URL": "https://es.wikipedia.org/wiki/Conjunto_de_instrucciones",
+	"Mono": "monkey_02"
+}
+,
+{
+	"Origen": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+	"Palabras": 1108,
+	"Enlaces": 45,
+	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+	"URL": "https://es.wikipedia.org/wiki/P%C3%A1gina_web",
+	"Mono": "monkey_01"
+}
+]

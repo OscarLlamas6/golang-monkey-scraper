@@ -226,7 +226,7 @@ func RunScraper(nr int64, url string, mono string, origen string, works chan Wor
 
 	mensaje := fmt.Sprintf("El mono %s esta descanzando", myMonkeys[monkeyIndex].ID)
 	fmt.Println(string(getColor("yellow")), mensaje)
-	time.Sleep(time.Millisecond * time.Duration(numberOfMiliseconds))
+	time.Sleep(time.Millisecond * time.Duration(numberOfMiliseconds) * 2)
 	myMonkeys[monkeyIndex].Disponible = true
 	mensaje = fmt.Sprintf("El mono %s ya esta disponible", myMonkeys[monkeyIndex].ID)
 	fmt.Println(string(getColor("cyan")), mensaje)
@@ -317,7 +317,7 @@ func SetScraper(firstJob *Work, monosValue int64, queueSize int64) {
 			myMonkeys[monkeyIndex].Disponible = false
 			monkeyID := myMonkeys[monkeyIndex].ID
 			go RunScraper(newJob.NR, newJob.URL, monkeyID, newJob.SHAPadre, jobs, monkeyIndex)
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Millisecond * 100)
 		}
 
 	}

@@ -162,20 +162,24 @@ func RunScraper(nr int64, url string, mono string, origen string, works chan Wor
 	contenido := ""
 	var cantidadEnlaces int64 = 0
 	var contadorNR int64 = 0
-
+	var contentSHA string = ""
 	c := colly.NewCollector()
 
 	c.OnHTML("p", func(e *colly.HTMLElement) {
 		contenido += e.Text + "\n"
 	})
 
-	h := sha1.New()
-	h.Write([]byte(contenido))
-	// variable con el SHA para el atributo SHAPadre de los nuevos works
-	contentSHA := hex.EncodeToString(h.Sum(nil))
-
 	// Buscando todas los enlaces dentro de las etiquetas p
 	c.OnHTML("p", func(e *colly.HTMLElement) {
+
+		e.ForEach("p", func(_ int, text *colly.HTMLElement) {
+			contenido += text.Text + "\n"
+		})
+
+		h := sha1.New()
+		h.Write([]byte(contenido))
+		// variable con el SHA para el atributo SHAPadre de los nuevos works
+		contentSHA = hex.EncodeToString(h.Sum(nil))
 
 		e.ForEach("a[href]", func(_ int, elem *colly.HTMLElement) {
 			link := elem.Attr("href")
@@ -317,7 +321,7 @@ func SetScraper(firstJob *Work, monosValue int64, queueSize int64) {
 			myMonkeys[monkeyIndex].Disponible = false
 			monkeyID := myMonkeys[monkeyIndex].ID
 			go RunScraper(newJob.NR, newJob.URL, monkeyID, newJob.SHAPadre, jobs, monkeyIndex)
-			time.Sleep(time.Millisecond * 100)
+			time.Sleep(time.Millisecond * 1000)
 		}
 
 	}

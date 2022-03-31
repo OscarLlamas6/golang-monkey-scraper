@@ -1,45 +1,90 @@
 [{
 	"Origen": "0",
-	"Palabras": 662,
-	"Enlaces": 15,
-	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-	"URL": "https://es.wikipedia.org/wiki/Web_scraping",
+	"Palabras": 428,
+	"Enlaces": 12,
+	"SHA": "03cf60fe72503c0cbb08250d063d23beb7bd5f76",
+	"URL": "https://es.wikipedia.org/wiki/Sherrilyn_McQueen",
 	"Mono": "monkey_01"
 }
 ,
 {
-	"Origen": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-	"Palabras": 1937,
-	"Enlaces": 126,
-	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-	"URL": "https://es.wikipedia.org/wiki/Programa_inform%C3%A1tico",
+	"Origen": "03cf60fe72503c0cbb08250d063d23beb7bd5f76",
+	"Palabras": 93,
+	"Enlaces": 7,
+	"SHA": "347a8f59be6da8f118224f6cb8c218017afdc4fd",
+	"URL": "https://es.wikipedia.org/wiki/Columbus_(Georgia)",
 	"Mono": "monkey_02"
 }
 ,
 {
-	"Origen": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-	"Palabras": 1023,
-	"Enlaces": 49,
-	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-	"URL": "https://es.wikipedia.org/wiki/Sitio_web",
+	"Origen": "03cf60fe72503c0cbb08250d063d23beb7bd5f76",
+	"Palabras": 7188,
+	"Enlaces": 316,
+	"SHA": "a9718d6a7806ae2b1f3c818633a64b9001bcf0d5",
+	"URL": "https://es.wikipedia.org/wiki/Georgia_(Estados_Unidos)",
 	"Mono": "monkey_01"
 }
 ,
 {
-	"Origen": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-	"Palabras": 2115,
-	"Enlaces": 22,
-	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-	"URL": "https://es.wikipedia.org/wiki/Conjunto_de_instrucciones",
+	"Origen": "03cf60fe72503c0cbb08250d063d23beb7bd5f76",
+	"Palabras": 341,
+	"Enlaces": 13,
+	"SHA": "61ac7125d1e29b59230f2d8cddbc542c03e7788d",
+	"URL": "https://es.wikipedia.org/wiki/Superventas",
 	"Mono": "monkey_02"
 }
 ,
 {
-	"Origen": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-	"Palabras": 1108,
-	"Enlaces": 45,
-	"SHA": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-	"URL": "https://es.wikipedia.org/wiki/P%C3%A1gina_web",
-	"Mono": "monkey_01"
+	"Origen": "347a8f59be6da8f118224f6cb8c218017afdc4fd",
+	"Palabras": 7188,
+	"Enlaces": 316,
+	"SHA": "a9718d6a7806ae2b1f3c818633a64b9001bcf0d5",
+	"URL": "https://es.wikipedia.org/wiki/Georgia_(Estados_Unidos)",
+	"Mono": "monkey_02"
+}
+,
+{
+	"Origen": "347a8f59be6da8f118224f6cb8c218017afdc4fd",
+	"Palabras": 13212,
+	"Enlaces": 1072,
+	"SHA": "39b7d0ef7ec887792082d243ff1936fe7b53664e",
+	"URL": "https://es.wikipedia.org/wiki/Estados_Unidos",
+	"Mono": "monkey_03"
+}
+,
+{
+	"Origen": "a9718d6a7806ae2b1f3c818633a64b9001bcf0d5",
+	"Palabras": 1796,
+	"Enlaces": 83,
+	"SHA": "2aa50f5dd42323c033b52b35f940727b049ea671",
+	"URL": "https://es.wikipedia.org/wiki/Estado_de_los_Estados_Unidos",
+	"Mono": "monkey_04"
+}
+,
+{
+	"Origen": "a9718d6a7806ae2b1f3c818633a64b9001bcf0d5",
+	"Palabras": 4946,
+	"Enlaces": 322,
+	"SHA": "3318d2062ab84ee78cf04e941a0249f6f6ec24af",
+	"URL": "https://es.wikipedia.org/wiki/Washington_D._C.",
+	"Mono": "monkey_05"
+}
+,
+{
+	"Origen": "61ac7125d1e29b59230f2d8cddbc542c03e7788d",
+	"Palabras": 3757,
+	"Enlaces": 281,
+	"SHA": "e5e05e1e5b65d765b8463155552a7a03ab6af7ba",
+	"URL": "https://es.wikipedia.org/wiki/Idioma_ingl%C3%A9s",
+	"Mono": "monkey_06"
+}
+,
+{
+	"Origen": "61ac7125d1e29b59230f2d8cddbc542c03e7788d",
+	"Palabras": 4599,
+	"Enlaces": 152,
+	"SHA": "b4552623b25c177f933a2fef538d7af761bd65ae",
+	"URL": "https://es.wikipedia.org/wiki/Libro",
+	"Mono": "monkey_07"
 }
 ]

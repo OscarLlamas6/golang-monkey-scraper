@@ -248,6 +248,7 @@ func Queue(work *Work) {
 	if len(myQueue.Slots) < cap(myQueue.Slots) {
 		myQueue.Mu.Lock()
 		myQueue.Slots = append(myQueue.Slots, *work)
+		fmt.Println(string(getColor("green")), myQueue.Slots)
 		myQueue.Mu.Unlock()
 	}
 }
@@ -257,13 +258,14 @@ func DeQueue() *Work {
 	myQueue.Mu.Lock()
 	auxWork := myQueue.Slots[0] // x|2|3|4|5|...
 	myQueue.Slots = myQueue.Slots[1:]
+	fmt.Println(string(getColor("green")), myQueue.Slots)
 	myQueue.Mu.Unlock()
 
 	return &auxWork
 }
 
 // Buscar un mono disponible
-func FindAvailableMoney(monos *[]Monkey) int {
+func FindAvailableMonkey(monos *[]Monkey) int {
 
 	for i, mono := range *monos {
 
@@ -310,7 +312,7 @@ func SetScraper(firstJob *Work, monosValue int64, queueSize int64) {
 
 			for searchMonkey {
 
-				monkeyIndex = FindAvailableMoney(&myMonkeys)
+				monkeyIndex = FindAvailableMonkey(&myMonkeys)
 				if monkeyIndex != -1 {
 					searchMonkey = false
 				}

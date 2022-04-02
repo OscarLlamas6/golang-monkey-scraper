@@ -53,10 +53,10 @@ var (
 	QueueSize          int64
 	NrValue            int64
 	contadorEscrituras int64 = 0
-	continuar          bool  = true
-	myQueue            *Cache
-	myResults          []Resultado
-	myMonkeys          []Monkey
+	//continuar          bool  = true
+	myQueue   *Cache
+	myResults []Resultado
+	myMonkeys []Monkey
 )
 
 // checkear constantemente si hay trabajos nuevos para agregar a la cola
@@ -243,12 +243,22 @@ func WordCount(value string) int {
 	return len(results) + 1
 }
 
+// Imprimir
+func PrintQueue(color string, mensaje string) {
+
+	fmt.Println(string(getColor(color)), mensaje)
+	for i := 0; i < len(myQueue.Slots); i++ {
+		fmt.Printf("%v\t[ Origen: %s | URL: %s | Nr: %v]\n", string(getColor("yellow")), myQueue.Slots[i].SHAPadre, myQueue.Slots[i].URL, myQueue.Slots[i].NR)
+	}
+
+}
+
 // Agregar un trabajo a la cola
 func Queue(work *Work) {
 	if len(myQueue.Slots) < cap(myQueue.Slots) {
 		myQueue.Mu.Lock()
 		myQueue.Slots = append(myQueue.Slots, *work)
-		fmt.Println(string(getColor("green")), myQueue.Slots)
+		PrintQueue("green", "Metiendo un nuevo trabajo a la cola:")
 		myQueue.Mu.Unlock()
 	}
 }
@@ -258,7 +268,7 @@ func DeQueue() *Work {
 	myQueue.Mu.Lock()
 	auxWork := myQueue.Slots[0] // x|2|3|4|5|...
 	myQueue.Slots = myQueue.Slots[1:]
-	fmt.Println(string(getColor("green")), myQueue.Slots)
+	PrintQueue("cyan", "Sacando un trabajo de la cola:")
 	myQueue.Mu.Unlock()
 
 	return &auxWork
@@ -357,93 +367,88 @@ func main() {
 
 	LimpiarPantalla()
 
-	for continuar {
+	fmt.Println(string(getColor("cyan")), "- Ingrese cantidad de monos buscadores")
+	fmt.Print(string(getColor("green")), "SOPES2 ")
+	fmt.Print(string(getColor("yellow")), ">> ")
+	fmt.Scanln(&Lectura)
+	Lectura = strings.TrimSuffix(Lectura, "/")
+	Lectura = strings.TrimSpace(Lectura)
+	MonkeysAmmount, _ := strconv.ParseInt(Lectura, 10, 64)
 
-		fmt.Println(string(getColor("cyan")), "- Ingrese cantidad de monos buscadores")
-		fmt.Print(string(getColor("green")), "SOPES2 ")
-		fmt.Print(string(getColor("yellow")), ">> ")
-		fmt.Scanln(&Lectura)
-		Lectura = strings.TrimSuffix(Lectura, "/")
-		Lectura = strings.TrimSpace(Lectura)
-		MonkeysAmmount, _ := strconv.ParseInt(Lectura, 10, 64)
+	fmt.Println("")
+	fmt.Println(string(getColor("cyan")), "- Ingrese tamaño de la cola")
+	fmt.Print(string(getColor("green")), "SOPES2 ")
+	fmt.Print(string(getColor("yellow")), ">> ")
+	fmt.Scanln(&Lectura)
+	Lectura = strings.TrimSuffix(Lectura, "/")
+	Lectura = strings.TrimSpace(Lectura)
+	QueueSize, _ := strconv.ParseInt(Lectura, 10, 64)
 
-		fmt.Println("")
-		fmt.Println(string(getColor("cyan")), "- Ingrese tamaño de la cola")
-		fmt.Print(string(getColor("green")), "SOPES2 ")
-		fmt.Print(string(getColor("yellow")), ">> ")
-		fmt.Scanln(&Lectura)
-		Lectura = strings.TrimSuffix(Lectura, "/")
-		Lectura = strings.TrimSpace(Lectura)
-		QueueSize, _ := strconv.ParseInt(Lectura, 10, 64)
+	fmt.Println("")
+	fmt.Println(string(getColor("cyan")), "- Ingrese valor de Nr")
+	fmt.Print(string(getColor("green")), "SOPES2 ")
+	fmt.Print(string(getColor("yellow")), ">> ")
+	fmt.Scanln(&Lectura)
+	Lectura = strings.TrimSuffix(Lectura, "/")
+	Lectura = strings.TrimSpace(Lectura)
+	NrValue, _ := strconv.ParseInt(Lectura, 10, 64)
 
-		fmt.Println("")
-		fmt.Println(string(getColor("cyan")), "- Ingrese valor de Nr")
-		fmt.Print(string(getColor("green")), "SOPES2 ")
-		fmt.Print(string(getColor("yellow")), ">> ")
-		fmt.Scanln(&Lectura)
-		Lectura = strings.TrimSuffix(Lectura, "/")
-		Lectura = strings.TrimSpace(Lectura)
-		NrValue, _ := strconv.ParseInt(Lectura, 10, 64)
+	fmt.Println("")
+	fmt.Println(string(getColor("cyan")), "- Ingrese búsqueda inicial")
+	fmt.Print(string(getColor("green")), "SOPES2 ")
+	fmt.Print(string(getColor("yellow")), ">> ")
+	fmt.Scanln(&EntryPoint)
+	EntryPoint = strings.TrimSuffix(EntryPoint, "/")
+	EntryPoint = strings.TrimSpace(EntryPoint)
 
-		fmt.Println("")
-		fmt.Println(string(getColor("cyan")), "- Ingrese búsqueda inicial")
-		fmt.Print(string(getColor("green")), "SOPES2 ")
-		fmt.Print(string(getColor("yellow")), ">> ")
-		fmt.Scanln(&EntryPoint)
-		EntryPoint = strings.TrimSuffix(EntryPoint, "/")
-		EntryPoint = strings.TrimSpace(EntryPoint)
+	fmt.Println("")
+	fmt.Println(string(getColor("cyan")), "- Ingrese nombre del archivo donde se almacenará el resultado.")
+	fmt.Print(string(getColor("green")), "SOPES2 ")
+	fmt.Print(string(getColor("yellow")), ">> ")
+	fmt.Scanln(&FileName)
+	FileName = strings.TrimSuffix(FileName, "/")
+	FileName = strings.TrimSpace(FileName)
 
-		fmt.Println("")
-		fmt.Println(string(getColor("cyan")), "- Ingrese nombre del archivo donde se almacenará el resultado.")
-		fmt.Print(string(getColor("green")), "SOPES2 ")
-		fmt.Print(string(getColor("yellow")), ">> ")
-		fmt.Scanln(&FileName)
-		FileName = strings.TrimSuffix(FileName, "/")
-		FileName = strings.TrimSpace(FileName)
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println(string(getColor("yellow")), "Resumen de configuración:")
+	fmt.Print(string(getColor("cyan")), "Cantidad de monos -> ")
+	fmt.Println(string(getColor("red")), MonkeysAmmount)
+	fmt.Print(string(getColor("cyan")), "Tamaño de la cola -> ")
+	fmt.Println(string(getColor("red")), QueueSize)
+	fmt.Print(string(getColor("cyan")), "Valor Nr -> ")
+	fmt.Println(string(getColor("red")), NrValue)
+	fmt.Print(string(getColor("cyan")), "URL inicial -> ")
+	fmt.Println(string(getColor("red")), EntryPoint)
+	fmt.Print(string(getColor("cyan")), "Nombre del archivo -> ")
+	fmt.Println(string(getColor("red")), FileName)
 
-		fmt.Println("")
-		fmt.Println("")
-		fmt.Println(string(getColor("yellow")), "Resumen de configuración:")
-		fmt.Print(string(getColor("cyan")), "Cantidad de monos -> ")
-		fmt.Println(string(getColor("red")), MonkeysAmmount)
-		fmt.Print(string(getColor("cyan")), "Tamaño de la cola -> ")
-		fmt.Println(string(getColor("red")), QueueSize)
-		fmt.Print(string(getColor("cyan")), "Valor Nr -> ")
-		fmt.Println(string(getColor("red")), NrValue)
-		fmt.Print(string(getColor("cyan")), "URL inicial -> ")
-		fmt.Println(string(getColor("red")), EntryPoint)
-		fmt.Print(string(getColor("cyan")), "Nombre del archivo -> ")
-		fmt.Println(string(getColor("red")), FileName)
+	fmt.Print(string(getColor("cyan")), "Cargando configuración:")
 
-		fmt.Print(string(getColor("cyan")), "Cargando configuración:")
-
-		for i := 0; i < 53; i++ {
-			fmt.Print(string(getColor("yellow")), "#")
-			time.Sleep(25 * time.Millisecond)
-		}
-
-		fmt.Println("")
-		fmt.Print(string(getColor("cyan")), "Configuración cargada correctamente.")
-		fmt.Println(string(getColor("yellow")), "Presione ENTER para iniciar el scraping. :D")
-		var wait string
-		fmt.Scanln(&wait)
-		fmt.Println(string(getColor("red")), "Ejecutando Monkey Scraper... ")
-
-		myFirstJob := Work{
-			SHAPadre: "0",
-			URL:      EntryPoint,
-			NR:       NrValue,
-		}
-
-		SetScraper(&myFirstJob, MonkeysAmmount, QueueSize)
-
-		// Realizando un scrapper de prueba, esto se haria iterando en la cola
-		//RunScrapper(NrValue, EntryPoint, "mono_01", "0")
-		fmt.Println(string(getColor("green")), "Scraping terminado. Presione ENTER para salir. :D")
-		fmt.Scanln(&Lectura)
-		continuar = false
-
+	for i := 0; i < 53; i++ {
+		fmt.Print(string(getColor("yellow")), "#")
+		time.Sleep(25 * time.Millisecond)
 	}
+
+	fmt.Println("")
+	fmt.Print(string(getColor("cyan")), "Configuración cargada correctamente.")
+	fmt.Println(string(getColor("yellow")), "Presione ENTER para iniciar el scraping. :D")
+	var wait string
+	fmt.Scanln(&wait)
+	fmt.Println(string(getColor("red")), "Ejecutando Monkey Scraper... ")
+
+	myFirstJob := Work{
+		SHAPadre: "0",
+		URL:      EntryPoint,
+		NR:       NrValue,
+	}
+
+	SetScraper(&myFirstJob, MonkeysAmmount, QueueSize)
+
+	// Realizando un scrapper de prueba, esto se haria iterando en la cola
+	//RunScrapper(NrValue, EntryPoint, "mono_01", "0")
+	fmt.Println(string(getColor("green")), "Scraping terminado. Presione ENTER para salir. :D")
+	fmt.Scanln(&Lectura)
 
 	fmt.Print(string(getColor("yellow")), "Hasta la próxima! :)")
 }
